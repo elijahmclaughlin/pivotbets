@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 from supabase import create_client
-import re # Import the regular expressions library
+import re
 
-# --- Supabase Connection ---
+# -- Supabase Connection
 @st.cache_resource
 def init_connection():
     """Initializes a connection to the Supabase client."""
@@ -13,7 +13,7 @@ def init_connection():
 
 supabase = init_connection()
 
-# --- Data Fetching Function (with NEW parsing logic) ---
+# -- Data Fetching Function
 @st.cache_data(ttl=600)
 def fetch_data(table_name):
     """Fetches data from a specified Supabase table."""
@@ -29,18 +29,13 @@ def fetch_data(table_name):
             
         df = pd.DataFrame(response.data)
 
-        # === FIX IS HERE: Advanced parsing for player props ===
         if table_name == 'nfl_player_prop':
-            # Columns that contain strings with numbers to be extracted
             string_stat_cols = ['sim_yards', 'sim_tds', 'boom_prob', 'bust_prob']
             
             for col in string_stat_cols:
                 if col in df.columns:
-                    # Create a new column with '_numeric' suffix for the clean number
-                    # This regex finds the first sequence of digits and decimals
                     df[f'{col}_numeric'] = df[col].astype(str).str.extract(r'(\d+\.?\d*)').astype(float)
 
-            # Replace any values that couldn't be converted with 0
             df.fillna(0, inplace=True)
 
         return df
@@ -49,7 +44,7 @@ def fetch_data(table_name):
         st.error(f"An error occurred while fetching data from '{table_name}': {e}")
         return pd.DataFrame()
 
-# --- Header Data Fetching Function ---
+# -- Header Data Fetching Function
 @st.cache_data(ttl=600)
 def fetch_header_data(table_name):
     """Fetches results from a specified Supabase table."""
@@ -67,16 +62,16 @@ def fetch_header_data(table_name):
         st.error(f"An error occurred while fetching data from '{table_name}': {e}")
         return pd.DataFrame()
 
-# --- Streamlit App Layout ---
+# -- Streamlit App Layout
 st.set_page_config(page_title="PivotBets Predictions", page_icon="🏈", layout="wide")
-st.title("PivotBets NFL & CFB Game Predictions")
+st.title("PivotBets Sports Predictions")
 st.link_button("Visit PivotBets!", "https://www.pivotbets.com")
 
-# --- Fetch Header Data ---
+# -- Fetch Header Data
 nfl_results = fetch_header_data('nfl_results')
 cfb_results = fetch_header_data('cfb_results')
 
-# --- Sidebar for Filtering ---
+# -- Sidebar for Filtering
 st.sidebar.header("Filter Options")
 league = st.sidebar.radio(
     "Select a League:",
@@ -84,7 +79,7 @@ league = st.sidebar.radio(
     horizontal=False 
 )
 
-# --- Dynamic Header Based on League Selection ---
+# -- Dynamic Header Based on League Selection
 st.markdown("---") 
 
 if league == "NFL":
@@ -113,7 +108,7 @@ elif league == "College Football":
         col2.metric("Spread Accuracy", f"{ats_accuracy:.2f}%")
         col3.metric("Total Score Accuracy", f"{total_accuracy:.2f}%")
 
-# --- Determine table to query based on league selection ---
+# -- Determine table to query based on league selection
 if league == "NFL":
     table_to_query = "nfl_games"
 elif league == "College Football":
@@ -123,12 +118,11 @@ else: # Handles "NFL Player Props"
 
 all_data = fetch_data(table_to_query)
 
-# --- Main Content Display ---
+# ---Main Content Display
 
 # LOGIC FOR NFL & CFB GAME PREDICTIONS
 if (league == "NFL" or league == "College Football") and not all_data.empty:
     st.header(f"{league} Game Predictions")
-    # (Your existing game prediction code works well, no changes needed here)
     if 'concat' in all_data.columns:
         available_matchups = sorted(all_data['concat'].unique())
         selected_matchup = st.sidebar.selectbox("Select a Matchup:", options=["All Matchups"] + available_matchups, index=0)
@@ -146,9 +140,15 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                         with team1:
                             st.markdown(f"##### **{row['away_team']}**")
                             st.metric(label="Forecasted Score", value=f"{row['away_sim_points']:.1f}")
+                            st.metric(label="Moneyline Odds", value=f"{row['away_ml']}")
+                            st.metric(label="Away Spread", value=f"{row['away_spread']}")
+                            st.metric(label="Total Under", value=f"{row['total_under']}")
                         with team2:
                             st.markdown(f"##### **{row['home_team']}**")
                             st.metric(label="Forecasted Score", value=f"{row['home_sim_points']:.1f}")
+                            st.metric(label="Moneyline Odds", value=f"{row['home_ml']}")
+                            st.metric(label="Home Spread", value=f"{row['home_spread']}")
+                            st.metric(label="Total Over", value=f"{row['total_over']}")
                         st.markdown("---")
                         st.success(f"Predicted Winner: **{row['pred_winner']}** ({row['pred_wp']} Win Pr)")
                         st.success(f"Predicted Cover: **{row['pred_cover_team']}** ({row['pred_ats_prob']} Cover Pr)")
@@ -156,7 +156,7 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
         else:
             st.info("No predictions available for the selected matchup.")
 
-# === NEW LOGIC FOR NFL PLAYER PROPS ===
+# === LOGIC FOR NFL PLAYER PROPS
 elif league == "NFL Player Props" and not all_data.empty:
     st.header("NFL Player Prop Predictions")
     if 'matchup' in all_data.columns:
@@ -216,3 +216,4 @@ elif league == "NFL Player Props" and not all_data.empty:
 # Fallback message if data is empty for any selection
 elif all_data.empty:
     st.info(f"Could not retrieve data for the selected league.")
+
