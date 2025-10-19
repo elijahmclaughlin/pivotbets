@@ -216,7 +216,7 @@ elif league == "NFL Player Props" and not all_data.empty:
                     # %A = Full weekday name, %B = Full month name, %d = Day of the month
                     formatted_gameday = gameday_dt.strftime("%A, %B %d").replace(" 0", " ")
                     
-                    st.caption(formatted_gameday) 
+                    st.caption(f"Gameday: {formatted_gameday}") 
 
                 except Exception as e:
                     # Handle cases where gameday isn't a valid date string
