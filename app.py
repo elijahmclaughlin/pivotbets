@@ -149,7 +149,7 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                             # %d = Day of the month as a zero-padded decimal (e.g., 05 or 20)
                             formatted_gameday = gameday_dt.strftime("%A, %B %d").replace(" 0", " ")
                             
-                            st.caption(formatted_gameday) 
+                            st.caption(f"Gameday: {formatted_gameday}") 
 
                         except Exception as e:
                             # Handle cases where gameday isn't a valid date string
