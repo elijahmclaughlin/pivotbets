@@ -118,7 +118,7 @@ else: # Handles "NFL Player Props"
 
 all_data = fetch_data(table_to_query)
 
-# ---Main Content Display
+# -- Main Content Display
 
 # LOGIC FOR NFL & CFB GAME PREDICTIONS
 if (league == "NFL" or league == "College Football") and not all_data.empty:
@@ -139,20 +139,20 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                         team1, team2 = st.columns(2)
                         with team1:
                             st.markdown(f"##### **{row['away_team']}**")
-                            st.metric(label="Forecasted Score", value=f"{row['away_sim_points']:.1f}")
+                            st.metric(label="Projected Away Score", value=f"{row['away_sim_points']:.1f}")
                             st.metric(label="Moneyline Odds", value=f"{row['away_ml']}")
                             st.metric(label="Away Spread", value=f"{row['away_spread']}")
                             st.metric(label="Total Under", value=f"{row['total_under']}")
                         with team2:
                             st.markdown(f"##### **{row['home_team']}**")
-                            st.metric(label="Forecasted Score", value=f"{row['home_sim_points']:.1f}")
+                            st.metric(label="Projected Home Score", value=f"{row['home_sim_points']:.1f}")
                             st.metric(label="Moneyline Odds", value=f"{row['home_ml']}")
                             st.metric(label="Home Spread", value=f"{row['home_spread']}")
                             st.metric(label="Total Over", value=f"{row['total_over']}")
                         st.markdown("---")
-                        st.success(f"Predicted Winner: **{row['pred_winner']}** ({row['pred_wp']} Win Pr)")
-                        st.success(f"Predicted Cover: **{row['pred_cover_team']}** ({row['pred_ats_prob']} Cover Pr)")
-                        st.success(f"Predicted Total: **{row['pred_total_name']}** ({row['pred_ou_prob']} O/U Pr)")
+                        st.success(f"Predicted Winner: **{row['pred_winner']}** | {row['pred_wp']} Win Probability")
+                        st.success(f"Predicted Cover: **{row['pred_cover_team']}** | {row['pred_ats_prob']} Cover Probability")
+                        st.success(f"Predicted Total: **{row['pred_total_name']}** | {row['pred_ou_prob']} O/U Probability")
         else:
             st.info("No predictions available for the selected matchup.")
 
