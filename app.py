@@ -203,6 +203,25 @@ elif league == "NFL Player Props" and not all_data.empty:
 
             with st.container(border=True):
                 st.subheader(f"**{matchup}**")
+
+                # -- Adding Game Date
+                # Get the gameday from the first row of the matchup data
+                gameday_value = matchup_data['gameday'].iloc[0]
+                
+                try:
+                    # 1. Convert the date string to a datetime object
+                    gameday_dt = pd.to_datetime(gameday_value)
+                    
+                    # 2. Format: "Day, Month DD" (e.g., "Thursday, September 20")
+                    # %A = Full weekday name, %B = Full month name, %d = Day of the month
+                    formatted_gameday = gameday_dt.strftime("%A, %B %d").replace(" 0", " ")
+                    
+                    st.caption(formatted_gameday) 
+
+                except Exception as e:
+                    # Handle cases where gameday isn't a valid date string
+                    st.caption(f"Gameday: {gameday_value}") 
+                    
                 col1, col2 = st.columns(2)
 
                 # Function to display player stats to avoid repeating code
