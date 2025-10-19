@@ -136,6 +136,34 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                 with cols[col_index]:
                     with st.container(border=True):
                         st.subheader(f"**{row['away_team_name']} @ {row['home_team_name']}**")
+
+                        # -- Adding Kickoff Date & Time
+                        from datetime import datetime
+                        
+                        try:
+                            # Parse the gameday string to a datetime object
+                            # Use dateutil.parser
+                            gameday_dt = pd.to_datetime(row['gameday']) 
+                            
+                            # Format: "7:25 PM ET on Thursday, September 20"                            
+                            formatted_gameday = gameday_dt.strftime("%I:%M %p %Z on %A, %B %d").replace(" 0", " ") # Removing leading 0 from time
+                            if "on" in formatted_gameday:
+                                # Example output cleanup: '07:25 PM  on Thursday, September 20' -> '7:25 PM ET on Thursday, September 20'
+                                formatted_gameday = formatted_gameday.replace("AM ", "AM ET ").replace("PM ", "PM ET ") # Placeholder for 'ET'
+                                formatted_gameday = re.sub(r'(\d):', r'\1', formatted_gameday).replace(" 0", " ")
+
+                            # force the 'ET' and use the month/day formatting:
+                            time_part = gameday_dt.strftime("%I:%M %p").lstrip('0')
+                            day_part = gameday_dt.strftime("on %A, %B %d").replace(" 0", " ") # removes leading zero from day
+                            formatted_gameday = f"Kickoff: {time_part} ET {day_part}"
+
+                            st.caption(formatted_gameday) # Use st.caption or st.info for the smaller text
+
+                        except Exception as e:
+                            # Handle cases where gameday isn't a valid date/time string
+                            st.caption(f"Kickoff: {row['gameday']}") 
+                            st.error(f"Date parsing error: {e}")
+                        
                         team1, team2 = st.columns(2)
                         with team1:
                             st.markdown(f"##### **{row['away_team']}**")
