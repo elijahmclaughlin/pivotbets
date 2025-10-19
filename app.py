@@ -137,27 +137,24 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                     with st.container(border=True):
                         st.subheader(f"**{row['away_team_name']} @ {row['home_team_name']}**")
 
-                        # -- Adding Kickoff Date & Time
-                        from datetime import datetime
-                        
+                        # -- Adding the game date
+                        # 1. Convert the date string to a datetime object
+                        # pd.to_datetime can handle various date string formats
                         try:
-                            # Parse the gameday string to a datetime object
-                            # Use dateutil.parser
                             gameday_dt = pd.to_datetime(row['gameday']) 
                             
-                            # Format: "7:25 PM ET on Thursday, September 20"                            
-                            formatted_gameday = gameday_dt.strftime("%I:%M %p %Z on %A, %B %d").replace(" 0", " ") # Removing leading 0 from time
-                            if "on" in formatted_gameday:
-                                # Example output cleanup: '07:25 PM  on Thursday, September 20' -> '7:25 PM ET on Thursday, September 20'
-                                formatted_gameday = formatted_gameday.replace("AM ", "AM ET ").replace("PM ", "PM ET ") # Placeholder for 'ET'
-                                formatted_gameday = re.sub(r'(\d):', r'\1', formatted_gameday).replace(" 0", " ")
+                            # 2. Format: "Day, Month DD" (e.g., "Thursday, September 20")
+                            # %A = Full weekday name (e.g., Thursday)
+                            # %B = Full month name (e.g., September)
+                            # %d = Day of the month as a zero-padded decimal (e.g., 05 or 20)
+                            formatted_gameday = gameday_dt.strftime("%A, %B %d").replace(" 0", " ")
+                            
+                            st.caption(formatted_gameday) 
 
-                            # force the 'ET' and use the month/day formatting:
-                            time_part = gameday_dt.strftime("%I:%M %p").lstrip('0')
-                            day_part = gameday_dt.strftime("on %A, %B %d").replace(" 0", " ") # removes leading zero from day
-                            formatted_gameday = f"Kickoff: {time_part} ET {day_part}"
-
-                            st.caption(formatted_gameday) # Use st.caption or st.info for the smaller text
+                        except Exception as e:
+                            # Handle cases where gameday isn't a valid date string
+                            st.caption(f"Gameday: {row['gameday']}") 
+                            st.error(f"Date parsing error: {e}")
 
                         except Exception as e:
                             # Handle cases where gameday isn't a valid date/time string
