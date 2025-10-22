@@ -65,7 +65,7 @@ def fetch_header_data(table_name):
 # -- Streamlit App Layout
 st.set_page_config(page_title="PivotBets Predictions", page_icon="🏈", layout="wide")
 st.title("PivotBets Sports Predictions")
-st.link_button("Visit PivotBets!", "https://www.pivotbets.com")
+st.link_button("Visit PivotBets!", "https.www.pivotbets.com")
 
 # -- Fetch Header Data
 nfl_results = fetch_header_data('nfl_results')
@@ -113,21 +113,24 @@ if league == "NFL":
     table_to_query = "nfl_games"
 elif league == "College Football":
     table_to_query = "cfb_games"
-else: # Handles "NFL Player Props"
+else:
     table_to_query = "nfl_player_prop"
 
 all_data = fetch_data(table_to_query)
 
 # -- Main Content Display
 
-# LOGIC FOR NFL & CFB GAME PREDICTIONS
+# -- NFL & CFB Game Predictions Block
 if (league == "NFL" or league == "College Football") and not all_data.empty:
     st.header(f"{league} Game Predictions")
+    
     if 'concat' in all_data.columns:
         available_matchups = sorted(all_data['concat'].unique())
         selected_matchup = st.sidebar.selectbox("Select a Matchup:", options=["All Matchups"] + available_matchups, index=0)
         st.markdown("---")
+        
         display_data = all_data if selected_matchup == "All Matchups" else all_data[all_data['concat'] == selected_matchup]
+        
         if not display_data.empty:
             num_columns = 2
             cols = st.columns(num_columns)
@@ -136,31 +139,6 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                 with cols[col_index]:
                     with st.container(border=True):
                         st.subheader(f"**{row['away_team_name']} @ {row['home_team_name']}**")
-
-                        # -- Adding the game date
-                        # 1. Convert the date string to a datetime object
-                        # pd.to_datetime can handle various date string formats
-                        try:
-                            gameday_dt = pd.to_datetime(row['gameday']) 
-                            
-                            # 2. Format: "Day, Month DD" (e.g., "Thursday, September 20")
-                            # %A = Full weekday name (e.g., Thursday)
-                            # %B = Full month name (e.g., September)
-                            # %d = Day of the month as a zero-padded decimal (e.g., 05 or 20)
-                            formatted_gameday = gameday_dt.strftime("%A, %B %d").replace(" 0", " ")
-                            
-                            st.caption(f"Gameday: {formatted_gameday}") 
-
-                        except Exception as e:
-                            # Handle cases where gameday isn't a valid date string
-                            st.caption(f"Gameday: {row['gameday']}") 
-                            st.error(f"Date parsing error: {e}")
-
-                        except Exception as e:
-                            # Handle cases where gameday isn't a valid date/time string
-                            st.caption(f"Kickoff: {row['gameday']}") 
-                            st.error(f"Date parsing error: {e}")
-                        
                         team1, team2 = st.columns(2)
                         with team1:
                             st.markdown(f"##### **{row['away_team']}**")
@@ -178,10 +156,33 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                         st.success(f"Predicted Winner: **{row['pred_winner']}** | {row['pred_wp']} Win Probability")
                         st.success(f"Predicted Cover: **{row['pred_cover_team']}** | {row['pred_ats_prob']} Cover Probability")
                         st.success(f"Predicted Total: **{row['pred_total_name']}** | {row['pred_ou_prob']} O/U Probability")
+
+                        # -- Insights Blocks
+                        if league == "NFL":
+                            
+                            # Win Path Insights
+                            if isinstance(row['insights_v2'], list):
+                                with st.expander(f"**{row['pred_winner']} Paths to Victory**", expanded=False):
+                                    for path in row['insights_v2']:
+                                        st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
+                                        st.caption(f"{path['narrative']}")
+                                        st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
+                            
+                            # Score Archetypes
+                            if isinstance(row['insights_v1'], list):
+                                with st.expander(f"**{row['pred_winner']} Score Archetypes**", expanded=False):
+                                    for path in row['insights_v1']:
+                                        st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
+                                        st.caption(f"{path['narrative']}")
+                                        st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
+                        
         else:
             st.info("No predictions available for the selected matchup.")
+    else:
+        st.warning(f"The table '{table_to_query}' does not contain a 'concat' column.")
+        st.dataframe(all_data)
 
-# === LOGIC FOR NFL PLAYER PROPS
+# -- NFL Player Prop Block
 elif league == "NFL Player Props" and not all_data.empty:
     st.header("NFL Player Prop Predictions")
     if 'matchup' in all_data.columns:
@@ -197,31 +198,16 @@ elif league == "NFL Player Props" and not all_data.empty:
             teams = matchup_data['team'].unique()
             if len(teams) < 2: continue
             
-            away_team_abbr, home_team_abbr = matchup.split(' @ ')
+            # Use regex to be safe
+            match = re.search(r'(.+) @ (.+)', matchup)
+            if not match: continue
+            
+            away_team_abbr, home_team_abbr = match.groups()
             away_team = next((t for t in teams if away_team_abbr in t), teams[0])
             home_team = next((t for t in teams if home_team_abbr in t), teams[1])
 
             with st.container(border=True):
                 st.subheader(f"**{matchup}**")
-
-                # -- Adding Game Date
-                # Get the gameday from the first row of the matchup data
-                gameday_value = matchup_data['gameday'].iloc[0]
-                
-                try:
-                    # 1. Convert the date string to a datetime object
-                    gameday_dt = pd.to_datetime(gameday_value)
-                    
-                    # 2. Format: "Day, Month DD" (e.g., "Thursday, September 20")
-                    # %A = Full weekday name, %B = Full month name, %d = Day of the month
-                    formatted_gameday = gameday_dt.strftime("%A, %B %d").replace(" 0", " ")
-                    
-                    st.caption(f"Gameday: {formatted_gameday}") 
-
-                except Exception as e:
-                    # Handle cases where gameday isn't a valid date string
-                    st.caption(f"Gameday: {gameday_value}") 
-                    
                 col1, col2 = st.columns(2)
 
                 # Function to display player stats to avoid repeating code
@@ -233,12 +219,13 @@ elif league == "NFL Player Props" and not all_data.empty:
                             with st.expander(f"**{player_name}**"):
                                 player_stats = team_data[team_data['player_name'] == player_name]
                                 for _, stat_row in player_stats.iterrows():
-                                    # Infer stat category from the text for a nice title
-                                    stat_category_text = stat_row['sim_yards']
-                                    category_title = "Stats"
-                                    if 'pass' in stat_category_text.lower(): category_title = "Passing"
-                                    elif 'rush' in stat_category_text.lower(): category_title = "Rushing"
-                                    elif 'rec' in stat_category_text.lower(): category_title = "Receiving"
+                                    # Use 'stat_type' for a reliable title
+                                    stat_category = stat_row['stat_type']
+                                    if 'pass' in stat_category: category_title = "Passing"
+                                    elif 'rush' in stat_category: category_title = "Rushing"
+                                    elif 'rec' in stat_category: category_title = "Receiving"
+                                    else: category_title = "Stats"
+                                        
                                     st.markdown(f"**{category_title} Projections**")
                                     
                                     # Use the cleaned numeric columns for metric values
@@ -257,7 +244,7 @@ elif league == "NFL Player Props" and not all_data.empty:
         st.warning(f"The table '{table_to_query}' does not contain a 'matchup' column.")
         st.dataframe(all_data)
 
-# Fallback message if data is empty for any selection
+# -- Fallback message if data is empty for any selection
 elif all_data.empty:
     st.info(f"Could not retrieve data for the selected league.")
-
+    
