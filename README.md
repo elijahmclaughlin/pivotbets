@@ -1,5 +1,5 @@
 # Pivot Bets Streamlit App
-This is a Streamlit web application that displays sports betting predictions and analytics for the NFL and College Football. The app fetches live data from a Supabase backend to show game predictions, player props, and model performance.
+This is a Streamlit web application that displays sports betting predictions and analytics for the NFL and College Football. The app fetches live data from a Supabase backend to show game predictions, player props, and model performance. Visit [Pivot Bets](https://www.pivotbets.com) and the [Streamlit Web App](https://pivotbets.streamlit.app)
 
 ## Features
 - **League Selection:** View predictions for NFL, College Football, and NFL Player Props.
