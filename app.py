@@ -19,9 +19,9 @@ def fetch_data(table_name):
     """Fetches data from a specified Supabase table."""
     try:
         if table_name == 'nfl_player_prop':
-             response = supabase.table(table_name).select("*").order("player_name", desc=False).execute()
+            response = supabase.table(table_name).select("*").order("player_name", desc=False).execute()
         else:
-             response = supabase.table(table_name).select("*").order("gameday", desc=False).execute()
+            response = supabase.table(table_name).select("*").order("gameday", desc=False).execute()
         
         if not response.data:
             st.warning(f"No data found in the '{table_name}' table.")
@@ -34,6 +34,7 @@ def fetch_data(table_name):
             
             for col in string_stat_cols:
                 if col in df.columns:
+                    # Extract numeric part from string columns
                     df[f'{col}_numeric'] = df[col].astype(str).str.extract(r'(\d+\.?\d*)').astype(float)
 
             df.fillna(0, inplace=True)
@@ -65,7 +66,7 @@ def fetch_header_data(table_name):
 # -- Streamlit App Layout
 st.set_page_config(page_title="PivotBets Predictions", page_icon="🏈", layout="wide")
 st.title("PivotBets Sports Predictions")
-st.link_button("Visit PivotBets!", "https.www.pivotbets.com")
+st.link_button("Visit PivotBets!", "https://www.pivotbets.com")
 
 # -- Fetch Header Data
 nfl_results = fetch_header_data('nfl_results')
@@ -219,12 +220,12 @@ elif league == "NFL Player Props" and not all_data.empty:
                             with st.expander(f"**{player_name}**"):
                                 player_stats = team_data[team_data['player_name'] == player_name]
                                 for _, stat_row in player_stats.iterrows():
-                                    # Use 'stat_type' for a reliable title
-                                    stat_category = stat_row['stat_type']
-                                    if 'pass' in stat_category: category_title = "Passing"
-                                    elif 'rush' in stat_category: category_title = "Rushing"
-                                    elif 'rec' in stat_category: category_title = "Receiving"
-                                    else: category_title = "Stats"
+                                    # Infer stat category from the text for a nice title
+                                    stat_category_text = stat_row['sim_yards']
+                                    category_title = "Stats"
+                                    if 'pass' in stat_category_text.lower(): category_title = "Passing"
+                                    elif 'rush' in stat_category_text.lower(): category_title = "Rushing"
+                                    elif 'rec' in stat_category_text.lower(): category_title = "Receiving"
                                         
                                     st.markdown(f"**{category_title} Projections**")
                                     
@@ -247,4 +248,4 @@ elif league == "NFL Player Props" and not all_data.empty:
 # -- Fallback message if data is empty for any selection
 elif all_data.empty:
     st.info(f"Could not retrieve data for the selected league.")
-    
+
