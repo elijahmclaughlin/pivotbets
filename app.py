@@ -34,7 +34,6 @@ def fetch_data(table_name):
             
             for col in string_stat_cols:
                 if col in df.columns:
-                    # Extract numeric part from string columns
                     df[f'{col}_numeric'] = df[col].astype(str).str.extract(r'(\d+\.?\d*)').astype(float)
 
             df.fillna(0, inplace=True)
@@ -120,7 +119,6 @@ else:
 all_data = fetch_data(table_to_query)
 
 # -- Main Content Display
-
 # -- NFL & CFB Game Predictions Block
 if (league == "NFL" or league == "College Football") and not all_data.empty:
     st.header(f"{league} Game Predictions")
@@ -158,24 +156,21 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                         st.success(f"Predicted Cover: **{row['pred_cover_team']}** | {row['pred_ats_prob']} Cover Probability")
                         st.success(f"Predicted Total: **{row['pred_total_name']}** | {row['pred_ou_prob']} O/U Probability")
 
-                        # -- Insights Blocks
-                        if league == "NFL":
-                            
-                            # Win Path Insights
-                            if isinstance(row['insights_v2'], list):
-                                with st.expander(f"**{row['pred_winner']} Paths to Victory**", expanded=False):
-                                    for path in row['insights_v2']:
-                                        st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
-                                        st.caption(f"{path['narrative']}")
-                                        st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
-                            
-                            # Score Archetypes
-                            if isinstance(row['insights_v1'], list):
-                                with st.expander(f"**{row['pred_winner']} Score Archetypes**", expanded=False):
-                                    for path in row['insights_v1']:
-                                        st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
-                                        st.caption(f"{path['narrative']}")
-                                        st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
+                        # Win Path Insights
+                        if isinstance(row['insights_v2'], list):
+                            with st.expander(f"**{row['pred_winner']} Paths to Victory**", expanded=False):
+                                for path in row['insights_v2']:
+                                    st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
+                                    st.caption(f"{path['narrative']}")
+                                    st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
+                        
+                        # Score Archetypes
+                        if isinstance(row['insights_v1'], list):
+                            with st.expander(f"**{row['pred_winner']} Score Archetypes**", expanded=False):
+                                for path in row['insights_v1']:
+                                    st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
+                                    st.caption(f"{path['narrative']}")
+                                    st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
                         
         else:
             st.info("No predictions available for the selected matchup.")
@@ -220,7 +215,6 @@ elif league == "NFL Player Props" and not all_data.empty:
                             with st.expander(f"**{player_name}**"):
                                 player_stats = team_data[team_data['player_name'] == player_name]
                                 for _, stat_row in player_stats.iterrows():
-                                    # Infer stat category from the text for a nice title
                                     stat_category_text = stat_row['sim_yards']
                                     category_title = "Stats"
                                     if 'pass' in stat_category_text.lower(): category_title = "Passing"
@@ -229,7 +223,6 @@ elif league == "NFL Player Props" and not all_data.empty:
                                         
                                     st.markdown(f"**{category_title} Projections**")
                                     
-                                    # Use the cleaned numeric columns for metric values
                                     st.metric(label="Simulated Yards", value=f"{stat_row['sim_yards_numeric']:.1f}")
                                     st.metric(label="Simulated TDs", value=f"{stat_row['sim_tds_numeric']:.2f}")
                                     st.metric(label="Boom Probability", value=f"{stat_row['boom_prob_numeric']:.1f}%")
@@ -248,4 +241,3 @@ elif league == "NFL Player Props" and not all_data.empty:
 # -- Fallback message if data is empty for any selection
 elif all_data.empty:
     st.info(f"Could not retrieve data for the selected league.")
-
