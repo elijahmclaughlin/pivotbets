@@ -10,7 +10,7 @@ This is a Streamlit web application that displays sports betting predictions and
 
 ## Tech Stack
 - **Frontend:** Streamlit
-- **Backend:** models built in R, daily runs through GitHub, hosted in Supabase
+- **Backend:** R, GitHub Workflow, Supabase Database
 - **Languages:** R, Python, SQL
 - **Core Libraries:** pandas, supabase-client, tidyverse, cluster (k-means)
 - **Custom Models:** Bayesian Inference simulation, Monte Carlo integration
