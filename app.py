@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client
 import re
+from datetime import datetime
 
 # -- Supabase Connection
 @st.cache_resource
@@ -22,7 +23,7 @@ def fetch_data(table_name):
             response = supabase.table(table_name).select("*").order("player_name", desc=False).execute()
         else:
             response = supabase.table(table_name).select("*").order("gameday", desc=False).execute()
-        
+            
         if not response.data:
             st.warning(f"No data found in the '{table_name}' table.")
             return pd.DataFrame()
@@ -118,6 +119,15 @@ else:
 
 all_data = fetch_data(table_to_query)
 
+# -- Helper function to format the date
+def format_gameday(date_str):
+    """Formats a 'YYYY-MM-DD' date string to 'Weekday, Month DD'."""
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        return date_obj.strftime('%A, %B %d')
+    except (ValueError, TypeError):
+        return date_str
+
 # -- Main Content Display
 # -- NFL & CFB Game Predictions Block
 if (league == "NFL" or league == "College Football") and not all_data.empty:
@@ -138,6 +148,7 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                 with cols[col_index]:
                     with st.container(border=True):
                         st.subheader(f"**{row['away_team_name']} @ {row['home_team_name']}**")
+                        st.markdown(f"Gameday: **{format_gameday(row['gameday'])}**")
                         team1, team2 = st.columns(2)
                         with team1:
                             st.markdown(f"##### **{row['away_team']}**")
@@ -163,7 +174,7 @@ if (league == "NFL" or league == "College Football") and not all_data.empty:
                                     st.markdown(f"**{path['path']}** ({path['prob']}% Prob)")
                                     st.caption(f"{path['narrative']}")
                                     st.markdown("""<hr style="margin:0.2rem 0;" /> """, unsafe_allow_html=True)
-                        
+                            
                         # Score Archetypes
                         if isinstance(row['insights_v1'], list):
                             with st.expander(f"**{row['pred_winner']} Score Archetypes**", expanded=False):
@@ -202,8 +213,12 @@ elif league == "NFL Player Props" and not all_data.empty:
             away_team = next((t for t in teams if away_team_abbr in t), teams[0])
             home_team = next((t for t in teams if home_team_abbr in t), teams[1])
 
+            # Get the gameday
+            gameday_str = matchup_data['gameday'].iloc[0] if not matchup_data.empty else 'Unknown Date'
+
             with st.container(border=True):
                 st.subheader(f"**{matchup}**")
+                st.markdown(f"Gameday: **{format_gameday(gameday_str)}**")
                 col1, col2 = st.columns(2)
 
                 # Function to display player stats to avoid repeating code
