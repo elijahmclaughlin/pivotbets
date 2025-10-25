@@ -70,13 +70,14 @@ st.link_button("Visit PivotBets!", "https://www.pivotbets.com")
 
 # -- Fetch Header Data
 nfl_results = fetch_header_data('nfl_results')
+nba_results = fetch_header_data('nba_results')
 cfb_results = fetch_header_data('cfb_results')
 
 # -- Sidebar for Filtering
 st.sidebar.header("Filter Options")
 league = st.sidebar.radio(
     "Select a League:",
-    ("NFL", "College Football", "NFL Player Props"),
+    ("NFL", "NBA", "College Football", "NFL Player Props"),
     horizontal=False 
 )
 
@@ -97,6 +98,20 @@ if league == "NFL":
     else:
         st.warning("Could not load NFL results data.")
 
+if league == "NBA":
+    st.subheader("NBA Model Accuracy")
+    if not nba_results.empty:
+        ml_accuracy = nba_results['moneyline_accuracy'].iloc[0]
+        ats_accuracy = nba_results['ats_accuracy'].iloc[0]
+        total_accuracy = nba_results['total_accuracy'].iloc[0]
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Winner Accuracy", f"{ml_accuracy:.2f}%")
+        col2.metric("Spread Accuracy", f"{ats_accuracy:.2f}%")
+        col3.metric("Total Score Accuracy", f"{total_accuracy:.2f}%")
+    else:
+        st.warning("Could not load NBA results data.")
+
 elif league == "College Football":
     st.subheader("College Football Model Accuracy")
     if not cfb_results.empty:
@@ -108,10 +123,14 @@ elif league == "College Football":
         col1.metric("Winner Accuracy", f"{ml_accuracy:.2f}%")
         col2.metric("Spread Accuracy", f"{ats_accuracy:.2f}%")
         col3.metric("Total Score Accuracy", f"{total_accuracy:.2f}%")
+    else:
+        st.warning("Could not load College Football results data.")
 
 # -- Determine table to query based on league selection
 if league == "NFL":
     table_to_query = "nfl_games"
+elif league == "NBA":
+    table_to_query = "nba_games"
 elif league == "College Football":
     table_to_query = "cfb_games"
 else:
@@ -129,16 +148,16 @@ def format_gameday(date_str):
         return date_str
 
 # -- Main Content Display
-# -- NFL & CFB Game Predictions Block
-if (league == "NFL" or league == "College Football") and not all_data.empty:
+# -- NFL, NBA, & CFB Game Predictions Block
+if (league == "NFL" or league == "College Football" or league == "NBA") and not all_data.empty:
     st.header(f"{league} Game Predictions")
     
-    if 'concat' in all_data.columns:
-        available_matchups = sorted(all_data['concat'].unique())
+    if 'matchup' in all_data.columns:
+        available_matchups = sorted(all_data['matchup'].unique())
         selected_matchup = st.sidebar.selectbox("Select a Matchup:", options=["All Matchups"] + available_matchups, index=0)
         st.markdown("---")
         
-        display_data = all_data if selected_matchup == "All Matchups" else all_data[all_data['concat'] == selected_matchup]
+        display_data = all_data if selected_matchup == "All Matchups" else all_data[all_data['matchup'] == selected_matchup]
         
         if not display_data.empty:
             num_columns = 2
