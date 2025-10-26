@@ -17,6 +17,7 @@ This is a Streamlit web application that displays sports betting predictions and
 - MCBB game predictions (in queue: 2025-October)
 - NHL game predictions (in queue: 2025-October)
 - MLB game predictions (in queue: 2025-October)
+- MLB player prop projections (in queue: 2025-October)
 
 ## Tech Stack
 - **Frontend:** Streamlit
