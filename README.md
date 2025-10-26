@@ -24,5 +24,5 @@ This is a Streamlit web application that displays sports betting predictions and
 - **Backend:** R, GitHub Workflow, Supabase Database
 - **Languages:** R, Python, SQL
 - **Core Libraries:** pandas, supabase-client, tidyverse, cluster (k-means)
-- **Custom Models:** Bayesian Inference simulation, Monte Carlo integration
+- **Custom Models:** Bayesian Inference, Monte Carlo integration
 
