@@ -72,12 +72,13 @@ st.link_button("Visit PivotBets!", "https://www.pivotbets.com")
 nfl_results = fetch_header_data('nfl_results')
 nba_results = fetch_header_data('nba_results')
 cfb_results = fetch_header_data('cfb_results')
+mbb_results = fetch_header_data('mbb_results')
 
 # -- Sidebar for Filtering
 st.sidebar.header("Filter Options")
 league = st.sidebar.radio(
     "Select a League:",
-    ("NFL", "NBA", "College Football", "NFL Player Props"),
+    ("NFL", "NBA", "College Football", "MBB", "NFL Player Props"),
     horizontal=False 
 )
 
@@ -126,6 +127,20 @@ elif league == "College Football":
     else:
         st.warning("Could not load College Football results data.")
 
+elif league == "MBB":
+    st.subheader("Men's College Basketball Model Accuracy")
+    if not mbb_results.empty:
+        ml_accuracy = mbb_results['moneyline_accuracy'].iloc[0]
+        ats_accuracy = mbb_results['ats_accuracy'].iloc[0]
+        total_accuracy = mbb_results['total_accuracy'].iloc[0]
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Winner Accuracy", f"{ml_accuracy:.2f}%")
+        col2.metric("Spread Accuracy", f"{ats_accuracy:.2f}%")
+        col3.metric("Total Score Accuracy", f"{total_accuracy:.2f}%")
+    else:
+        st.warning("Could not load Men's College Basketball results data.")
+
 # -- Determine table to query based on league selection
 if league == "NFL":
     table_to_query = "nfl_games"
@@ -133,6 +148,8 @@ elif league == "NBA":
     table_to_query = "nba_games"
 elif league == "College Football":
     table_to_query = "cfb_games"
+elif league == "MBB":
+    table_to_query = "mbb_games"
 else:
     table_to_query = "nfl_player_prop"
 
@@ -149,7 +166,7 @@ def format_gameday(date_str):
 
 # -- Main Content Display
 # -- NFL, NBA, & CFB Game Predictions Block
-if (league == "NFL" or league == "College Football" or league == "NBA") and not all_data.empty:
+if (league == "NFL" or league == "College Football" or league == "NBA" or league == "MBB") and not all_data.empty:
     st.header(f"{league} Game Predictions")
     
     if 'matchup' in all_data.columns:
