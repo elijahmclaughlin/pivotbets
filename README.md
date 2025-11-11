@@ -8,17 +8,6 @@ This is a Streamlit web application that displays sports betting predictions and
 - **Player Props:** (NFL) Displays player-specific projections for yards, TDs, and boom/bust probabilities.
 - **Dynamic Filtering:** Users can filter predictions by specific matchups
 
-## Roadmap
-- NFL game predictions (completed: 2025-September)
-- NBA game predictions (completed: 2025-October)
-- CFB game predictions (completed: 2025-September)
-- NFL player prop projections (completed: 2025-September)
-- NBA player prop projections (in the works: 2025-October)
-- MCBB game predictions (in queue: 2025-October)
-- NHL game predictions (in queue: 2025-October)
-- MLB game predictions (in queue: 2025-October)
-- MLB player prop projections (in queue: 2025-October)
-
 ## Tech Stack
 - **Frontend:** Streamlit
 - **Backend:** R, GitHub Workflow, Supabase Database
